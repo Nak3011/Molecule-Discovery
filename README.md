@@ -1,58 +1,33 @@
-# Variational Autoencoder for Molecule Discovery
+# Molecule Studio
 
-A Variational Autoencoder (VAE) that learns a continuous latent representation of molecular structures and generates novel candidates. Trained on the QM9 benchmark dataset using SMILES notation, with validity and novelty assessment of generated molecules.
+A lightweight React/Vite and FastAPI demo for the notebook’s GRU SMILES VAE. RDKit parses molecules, calculates descriptors and generates optimized 3D conformers; 3Dmol.js renders the interactive viewer.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DrKenReid/VAE-for-Molecule-Discovery/blob/main/Variational_Autoencoder_for_Molecule_Discovery.ipynb)
+## Run locally
 
-## Techniques Demonstrated
+```sh
+# Python 3.10+ and Node.js 20+; install the small web runtime first.
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+npm install
 
-| Category | Details |
-|---|---|
-| **Generative Modelling** | Variational Autoencoder with KL-divergence regularisation |
-| **Molecular Representation** | SMILES encoding/decoding, character-level tokenisation |
-| **Deep Learning** | PyTorch GRU-based encoder/decoder, teacher forcing, KL annealing, mixed-precision training, latent-space sampling and interpolation |
-| **Cheminformatics** | RDKit molecule parsing, canonicalisation, property calculation, structure visualisation |
-| **Evaluation** | Train/validation/test split, held-out reconstruction accuracy, raw (unrepaired) validity, canonical novelty against the training set, property distributions |
-| **Reproducibility** | Fixed random seeds, version-pinned dependencies, deterministic data splits |
-| **Dataset** | QM9 — standard benchmark for small organic molecules |
+# Terminal 1: API
+uvicorn server.main:app --reload
 
-## How to Use
+# Terminal 2: UI
+npm run dev
+```
 
-1. Open the notebook in Google Colab using the badge above (GPU recommended for faster training).
-2. Run cells in order (*Runtime → Run all*) — the QM9 dataset is downloaded automatically and split into train/validation/test sets.
-3. The notebook walks through environment setup, data preprocessing, model training (with a validation loop), and molecule generation.
-4. Generated molecules are visualised with RDKit and assessed for reconstruction accuracy, raw validity, and canonical novelty; a latent-space interpolation shows the smoothness of the learned representation.
+Open the Vite URL printed in the terminal. The web UI proxies `/api` to `localhost:8000`.
 
-> The committed notebook has its outputs cleared — run all cells in Colab to regenerate them.
+## Model and demo data
 
-## Configuration
+The trained weights, config, model definition, and vocabulary are in `trained_vae_artifacts/`. The API loads `vae_model.pt` and its matching vocabulary automatically when PyTorch is installed. The artifact uses an embedding-based GRU VAE, so inference follows its saved architecture and padding/token settings. Checkpoint tensors are loaded on CPU; no GPU or training run is required. `checkpoint.pt` is retained as the full training checkpoint.
 
-Key parameters you can adjust:
+If PyTorch is unavailable, install the optional dependency with `pip install -r requirements-model.txt` and restart the API. In that case the app clearly switches to curated demo candidates and an illustrative latent map; it does not label them as model inference. All candidate structures are still validated and embedded in 3D by RDKit.
 
-- `hidden_dim` — GRU hidden state dimension
-- `latent_dim` — latent space dimensionality
-- `batch_size` — training batch size
-- `num_epochs` — number of training epochs
-- `SEED` — global random seed for reproducible splits, training, and sampling
+When a decoded string cannot be displayed as a molecule, the gallery chooses the closest vocabulary-compatible reference by SMILES edit distance. Cards and exports label these as related references. Model outputs and reference structures keep separate metrics.
 
-## A Note on Molecular Generation
+## Exports
 
-Generating valid SMILES strings is a hard problem — the syntax is strict, and most random character sequences are chemically meaningless. The VAE learns to navigate this by encoding known molecules into a smooth latent space where nearby points tend to decode into similar, valid structures. This is the core insight behind latent-space drug discovery: instead of searching a discrete combinatorial space, you optimise over a continuous manifold. The gap between "valid molecule" and "viable drug candidate" remains vast, but the approach demonstrates why generative models have become central to computational chemistry.
-
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
-## Related
-
-- [CNN X-ray Image Classifier](https://github.com/DrKenReid/CNN-Tutorial---X-ray-image-classifier) — deep learning for medical imaging
-- [Generalized Analysis of Text Data](https://github.com/DrKenReid/Generalized-Analysis-of-Text-Data) — NLP reference notebook with 13 techniques
-- [kenreid.co.uk/data_science](https://www.kenreid.co.uk/data_science.html) — all projects, publications, and CV
-
-## Author
-
-**Ken Reid** — Data Scientist, photographer, and avid reader.
-
-- [kenreid.co.uk](https://www.kenreid.co.uk) — Portfolio & blog
-- [@kenreid.co.uk](https://bsky.app/profile/kenreid.co.uk) — Bluesky
-- [@DrKenReid](https://github.com/DrKenReid) — GitHub
+Candidate lists can be downloaded as descriptor CSV or as SDF with RDKit-generated 3D conformers. Inputs RDKit cannot parse are recorded in CSV and omitted from SDF with a skipped-record count.

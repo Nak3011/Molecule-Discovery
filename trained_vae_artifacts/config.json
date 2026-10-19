@@ -1,0 +1,14 @@
+{
+  "model_type": "GRU_VAE",
+  "vocab_size": 7,
+  "hidden_dim": 384,
+  "latent_dim": 128,
+  "embedding_dim": 128,
+  "max_length": 100,
+  "pad_id": 7,
+  "start_token": "<",
+  "end_token": ">",
+  "batch_size": 256,
+  "best_validation_loss": 5.891401290893555,
+  "seed": 42
+}

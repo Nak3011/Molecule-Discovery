@@ -1,7 +1,6 @@
-# Tested on Google Colab (Python 3.12). Version floors reflect the versions the
-# committed run was produced with: pandas 2.2, numpy 2.0, rdkit 2025.9, torch 2.10, Pillow 11.3.
-pandas>=2.2
+# Lightweight API runtime. PyTorch is optional; install requirements-model.txt
+# to load a compatible trained notebook checkpoint.
 numpy>=1.26
 rdkit>=2024.3
-torch>=2.4
-Pillow>=10.0
+fastapi>=0.115
+uvicorn[standard]>=0.30

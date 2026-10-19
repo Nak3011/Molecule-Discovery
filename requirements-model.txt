@@ -1,0 +1,3 @@
+# Optional: only needed when loading a trained notebook checkpoint.
+-r requirements.txt
+torch>=2.4
